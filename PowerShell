@@ -1,0 +1,85 @@
+#----- Select the Script you need for execution situated between the remarks tags
+#----- and execute it
+#----- Recommended to use PowerShell ISE (launched as administrator)
+#----- Use the Run selection inside PS ISE
+#---------------------------------------------------------------------------------
+
+
+#----- Enable PS Scripts Exectuion ----------------------
+Set-ExecutionPolicy -ExecutionPolicy Unrestricted -Force
+#----- Enf Of Enable PS Scripts Execution ---------------
+
+#---- Command for Licensing------------------------------
+
+#---- SET License Server to Non SPLA ----------
+Set-ExecutionPolicy -ExecutionPolicy Unrestricted -Force
+$obj = gwmi -namespace "Root/CIMV2/TerminalServices" Win32_TerminalServiceSetting
+$obj. SetSpecifiedLicenseServerList("IGS-CHWLIC2.igesco.net")
+
+#---- SET License Server to SPLA ----------
+Set-ExecutionPolicy -ExecutionPolicy Unrestricted -Force
+$obj = gwmi -namespace "Root/CIMV2/TerminalServices" Win32_TerminalServiceSetting
+$obj. SetSpecifiedLicenseServerList("IGS-CHWLIC1.igesco.net")
+
+#---- Change Registry Key --------
+Path HKLM\SYSTEM\CurrentControlSet\Control\Terminal Server\RCM\Licensing Core 
+Name LicensingMode
+Value 4
+
+#----- End of Command for Licensing -----------------------
+
+#----- Move AD Roles from a DC to another -----------------
+$Server = Read-Host "Enter the name of the Destination DC"
+Move-ADDirectoryServerOperationMasterRole -Identity $Server -OperationMasterRole 0,1,2,3,4 -Force
+Write-Host "Job Done"
+netdom query fsmo
+#----- End of Move AD Roles --------------------------------
+
+#----- Create Client Tree in AD ----------------------------
+$Client = Read-Host "Enter the Client name"
+$Tree = 'OU=Clients,DC=IGESCO,DC=NET'
+$newOU = "OU=$Client,$Tree"
+Write-Host "Please wait...Creating the AD tree"
+if (Get-ADOrganizationalUnit -Filter "distinguishedName -eq '$newou'") {
+New-ADOrganizationalUnit -Name "Computers" -Path $newou
+New-ADOrganizationalUnit -Name "Groups" -Path $newou
+New-ADOrganizationalUnit -Name "Servers" -Path $newou
+New-ADOrganizationalUnit -Name "Users" -Path $newou
+} else {
+New-ADOrganizationalUnit -Name $Client -Path $Tree
+New-ADOrganizationalUnit -Name "Computers" -Path $newou
+New-ADOrganizationalUnit -Name "Groups" -Path $newou
+New-ADOrganizationalUnit -Name "Servers" -Path $newou
+New-ADOrganizationalUnit -Name "Users" -Path $newou
+}
+
+Write-Host "Finished"
+#----- End of Create Client Tree ------------------------------
+
+#----- Create a VPN Connection --------------------------------
+$VPNnAme = Read-Host "Please enter the name for the VPN Connection"
+$VPNIP = Read-Host "Please enter the targeting IP for the VPN Server"
+
+Write-Host "Please Wait...Creating the VPN Connection"
+
+Add-VpnConnection -Name $VPNnAme -ServerAddress $VPNIP -PassThru -TunnelType Pptp
+
+Write-Host "Done, please check it"
+Get-VpnConnection
+#----- End of Create a VPN Connection -------------------------
+
+#----- Remove a VPN Connection --------------------------------
+Get-VpnConnection
+$VPNnAme = Read-Host "Please enter the name for the VPN Connection you want to remove"
+
+
+Write-Host "Please Wait...Removing the VPN Connection"
+
+Remove-VpnConnection $VPNnAme -Force
+
+Write-Host "Done, please check it"
+Get-VpnConnection
+#----- End of Remove a VPN Connection -------------------------
+
+#----- Reboot Command ----
+Restart-Computer
