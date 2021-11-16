@@ -1,0 +1,29 @@
+
+# mettre les identifiants dans une variable
+$Cred = Get-Credential
+
+
+#créer une new session PS dans le server office 365
+$Session = New-PSSession -ConfigurationName Microsoft.Exchange -ConnectionUri https://ps.outlook.com/powershell/ -Credential $Cred -Authentication Basic -AllowRedirection
+
+
+# importer la session
+Import-PSSession $Session
+
+#si erreur Import-PSSession : Files cannot be loaded because running scripts is disabled on this system.
+Set-ExecutionPolicy RemoteSigned
+
+#pour quitter
+Remove-PSSession $Session
+
+#pour voir l'historique des mails
+Get-MessageTrace -RecipientAddress Toto@oo.cc -StartDate 11/07/2021 -EndDate 11/14/2021
+
+#avec choix du format
+Get-MessageTrace -RecipientAddress Toto@oo.cc -StartDate 11/07/2021 -EndDate 11/14/2021 | Format-list -Property Received,SenderAddress,Status,MessageTraceId
+
+#mail failed
+Get-MessageTrace -RecipientAddress Toto@oo.cc -StartDate 11/07/2017 -EndDate 11/14/2017 -Status Failed | Get-MessageTraceDetail
+
+
+Start-HistoricalSearch -ReportTitle "Trace1" -ReportType MessageTrace -SenderAddress j.stone@mod099.onmicrosoft.com -StartDate 11/01/2017 -EndDate 11/07/2017 -NotifyAddress j.stone@mod099.onmicrosoft.com
