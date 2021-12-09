@@ -14,12 +14,12 @@ Set-ExecutionPolicy -ExecutionPolicy Unrestricted -Force
 #---- SET License Server to Non SPLA ----------
 Set-ExecutionPolicy -ExecutionPolicy Unrestricted -Force
 $obj = gwmi -namespace "Root/CIMV2/TerminalServices" Win32_TerminalServiceSetting
-$obj. SetSpecifiedLicenseServerList("IGS-CHWLIC2.igesco.net")
+$obj. SetSpecifiedLicenseServerList("YOURDOMAINE.COM")
 
 #---- SET License Server to SPLA ----------
 Set-ExecutionPolicy -ExecutionPolicy Unrestricted -Force
 $obj = gwmi -namespace "Root/CIMV2/TerminalServices" Win32_TerminalServiceSetting
-$obj. SetSpecifiedLicenseServerList("IGS-CHWLIC1.igesco.net")
+$obj. SetSpecifiedLicenseServerList("YOURDOMAINE.COM")
 
 #---- Change Registry Key --------
 Path HKLM\SYSTEM\CurrentControlSet\Control\Terminal Server\RCM\Licensing Core 
@@ -37,7 +37,7 @@ netdom query fsmo
 
 #----- Create Client Tree in AD ----------------------------
 $Client = Read-Host "Enter the Client name"
-$Tree = 'OU=Clients,DC=IGESCO,DC=NET'
+$Tree = 'OU=Clients,DC=YOURDOMAINE,DC=COM'
 $newOU = "OU=$Client,$Tree"
 Write-Host "Please wait...Creating the AD tree"
 if (Get-ADOrganizationalUnit -Filter "distinguishedName -eq '$newou'") {
